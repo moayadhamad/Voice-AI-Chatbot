@@ -1,0 +1,87 @@
+import sounddevice as sd
+from scipy.io.wavfile import write
+import whisper
+import cohere
+from gtts import gTTS
+from playsound import playsound
+import uuid
+import os
+import time
+
+co = cohere.Client("هنا الكي حق ai")
+
+model = whisper.load_model("base")
+
+sample_rate = 44100
+duration = 5
+
+print("===================================")
+print(" Voice AI Chatbot Started")
+print(" قل (وقف) أو (stop) للخروج")
+print("===================================")
+
+while True:
+
+    print("\n🎤 تحدث الآن...")
+
+    recording = sd.rec(
+        int(duration * sample_rate),
+        samplerate=sample_rate,
+        channels=1,
+        dtype="int16"
+    )
+
+    sd.wait()
+
+    write("input.wav", sample_rate, recording)
+
+    result = model.transcribe(
+        "input.wav",
+        language="ar"
+    )
+
+    user_text = result["text"].strip()
+
+    print(" أنت:", user_text)
+
+    if user_text == "":
+        continue
+
+    if user_text.lower() == "stop" or "وقف" in user_text:
+        print(" إلى اللقاء")
+        break
+
+    response = co.chat(
+        model="command-a-03-2025",
+        message=f"""
+أنت مساعد ذكي.
+
+أجب دائماً باللغة العربية.
+اجعل الرد مختصراً وطبيعياً.
+
+رسالة المستخدم:
+{user_text}
+"""
+    )
+
+    reply = response.text.strip()
+
+    print(" البوت:", reply)
+
+    filename = f"response_{uuid.uuid4().hex}.mp3"
+
+    tts = gTTS(
+        text=reply,
+        lang="ar"
+    )
+
+    tts.save(filename)
+
+    playsound(filename)
+
+    time.sleep(1)
+
+    try:
+        os.remove(filename)
+    except:
+        pass
