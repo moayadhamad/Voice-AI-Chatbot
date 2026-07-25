@@ -38,5 +38,3 @@ Make sure FFmpeg is installed and added to your system PATH.
 ## Project Workflow
 Microphone → Whisper → Cohere → gTTS → Audio Response
 
-## Author
-Moayad Hamad
